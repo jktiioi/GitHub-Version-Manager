@@ -133,18 +133,6 @@ D:\git软件\data\config.json
 
 不会因为“保存设置”“刷新”“恢复版本”而上传你的本地文件。
 
-## 安全提醒
-
-推送前请确认文件夹里没有敏感文件，例如：
-
-- `.env`
-- 密码文件
-- 私钥文件，比如 `.pem`、`.key`、`id_rsa`
-- 数据库文件，比如 `.db`、`.sqlite`
-- 本地配置文件，比如 `config.local.*`
-
-如果不想把真实邮箱显示在 GitHub 提交记录里，可以使用 GitHub 的 noreply 邮箱。
-
 ---
 
 ## English
@@ -268,27 +256,4 @@ It stores:
 
 Your name and email are not saved in this app config file. They are written to the selected project’s local Git config for commit records.
 
-## What Gets Uploaded to GitHub
-
-Only clicking “Push current version” uploads to GitHub.
-
-It uploads:
-
-- Files tracked by Git in the current folder
-- Version note
-- Git commit author name and email
-
-“Save settings”, “Refresh”, and “Restore version” do not upload your local files.
-
-## Safety Tips
-
-Before pushing, make sure the folder does not contain sensitive files, such as:
-
-- `.env`
-- Password files
-- Private keys, such as `.pem`, `.key`, `id_rsa`
-- Database files, such as `.db`, `.sqlite`
-- Local config files, such as `config.local.*`
-
-If you do not want your real email to appear in GitHub commits, use your GitHub noreply email.
 
