@@ -1,0 +1,7 @@
+node_modules/
+npm-debug.log*
+*.log
+
+# Local app settings. This may contain personal folder paths and repository URLs.
+data/
+
