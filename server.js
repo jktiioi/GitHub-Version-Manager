@@ -272,7 +272,7 @@ async function getStatus() {
   const globalUserEmail = await runGit(["config", "--global", "user.email"], cwd);
   const resolvedUserName = localUserName.stdout || globalUserName.stdout;
   const resolvedUserEmail = localUserEmail.stdout || globalUserEmail.stdout;
-  const status = await runGit(["status", "--short"], cwd);
+  const status = await runGit(["-c", "core.quotepath=false", "status", "--short"], cwd);
   const currentHash = await runGit(["rev-parse", "--short", "HEAD"], cwd);
   const changes = status.stdout
     .split(/\r?\n/)
@@ -608,7 +608,7 @@ async function downloadLatest() {
   const remote = await runGit(["remote", "get-url", "origin"], cwd);
   if (!remote.ok) throw new Error("请先填写 GitHub 仓库地址并保存设置。");
 
-  const dirty = await runGit(["status", "--porcelain"], cwd);
+  const dirty = await runGit(["-c", "core.quotepath=false", "status", "--porcelain"], cwd);
   if (dirty.stdout) {
     throw new Error("当前文件夹有本地修改。请先推送、清理，或选择一个 GitHub 版本恢复，避免覆盖本地文件。");
   }
