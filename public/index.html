@@ -1181,6 +1181,14 @@
           waitingGit: "等待读取本地 Git 状态。",
           clean: "干净",
           unpushed: "未推送",
+          statusModified: "已修改",
+          statusAdded: "新增",
+          statusDeleted: "已删除",
+          statusRenamed: "已重命名",
+          statusCopied: "已复制",
+          statusUntracked: "新文件",
+          statusConflict: "冲突",
+          statusChanged: "已变更",
           noLocalChanges: "本地没有未保存修改。",
           detectedChanges: "检测到 {count} 个本地修改。",
           noHistoryTitle: "还没有 GitHub 版本历史",
@@ -1262,6 +1270,14 @@
           waitingGit: "Waiting to read local Git status.",
           clean: "Clean",
           unpushed: "Unpushed",
+          statusModified: "Modified",
+          statusAdded: "Added",
+          statusDeleted: "Deleted",
+          statusRenamed: "Renamed",
+          statusCopied: "Copied",
+          statusUntracked: "New file",
+          statusConflict: "Conflict",
+          statusChanged: "Changed",
           noLocalChanges: "No unsaved local changes.",
           detectedChanges: "{count} local file change(s) detected.",
           noHistoryTitle: "No GitHub version history yet",
@@ -1437,6 +1453,21 @@
         return message;
       }
 
+      function formatChangeStatus(status) {
+        const code = String(status || "").trim();
+        if (code === "??") return t("statusUntracked");
+        if (code === "M") return t("statusModified");
+        if (code === "A") return t("statusAdded");
+        if (code === "D") return t("statusDeleted");
+        if (code === "R") return t("statusRenamed");
+        if (code === "C") return t("statusCopied");
+        if (code === "UU" || code.includes("U")) return t("statusConflict");
+        if (code.includes("M")) return t("statusModified");
+        if (code.includes("A")) return t("statusAdded");
+        if (code.includes("D")) return t("statusDeleted");
+        return code || t("statusChanged");
+      }
+
       function fillForm(config) {
         $("#folderPath").value = config.folderPath || "";
         $("#repoUrl").value = config.repoUrl || "";
@@ -1510,7 +1541,7 @@
           const li = document.createElement("li");
           li.innerHTML = `<span class="file-path"></span><span class="file-badge"></span>`;
           li.querySelector(".file-path").textContent = change.path;
-          li.querySelector(".file-badge").textContent = change.status;
+          li.querySelector(".file-badge").textContent = formatChangeStatus(change.status);
           files.append(li);
         });
       }
