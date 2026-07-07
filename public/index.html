@@ -462,6 +462,20 @@
         margin-top: 12px;
       }
 
+      .branch-advanced {
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .branch-advanced h3 {
+        margin-bottom: 10px;
+      }
+
+      .branch-delete-row {
+        margin-top: 10px;
+      }
+
       .status-line {
         display: flex;
         align-items: center;
@@ -971,6 +985,23 @@
               <input id="newBranchName" placeholder="新建分支名称，例如 feature-home" />
               <button class="button button-secondary" type="button" id="createBranchButton">新建并切换</button>
             </div>
+            <div class="branch-advanced">
+              <h3 id="advancedBranchTitle">高级分支操作</h3>
+              <div class="branch-grid">
+                <div class="field">
+                  <label for="mergeBranchSelect">选择旁支</label>
+                  <select id="mergeBranchSelect"></select>
+                </div>
+                <button class="button button-secondary" type="button" id="mergeBranchButton">合并到当前分支</button>
+              </div>
+              <div class="branch-grid branch-delete-row">
+                <div class="field">
+                  <label for="deleteBranchSelect">选择本地旁支</label>
+                  <select id="deleteBranchSelect"></select>
+                </div>
+                <button class="button button-secondary" type="button" id="deleteBranchButton">删除本地旁支</button>
+              </div>
+            </div>
           </div>
           <div class="actions">
             <button class="button button-primary" id="setupButton">保存设置</button>
@@ -1152,6 +1183,11 @@
           switchBranch: "切换分支",
           newBranchPlaceholder: "新建分支名称，例如 feature-home",
           createBranch: "新建并切换",
+          advancedBranchTitle: "高级分支操作",
+          mergeBranchLabel: "选择旁支",
+          mergeBranch: "合并到当前分支",
+          deleteBranchLabel: "选择本地旁支",
+          deleteBranch: "删除本地旁支",
           saveSettings: "保存设置",
           pushTitle: "推送到 GitHub",
           pushSubtitle: "写一句版本说明，把当前文件夹保存成一个新版本。",
@@ -1209,6 +1245,8 @@
           setupMissing: "已补全可自动处理的项目，请继续填写缺失信息。",
           switchedBranch: "已切换到分支 {branch}。",
           createdBranch: "已新建并切换到分支 {branch}。首次推送时会发布到 GitHub。",
+          mergedBranch: "已把 {branch} 合并到当前分支。",
+          deletedBranch: "已删除本地旁支 {branch}。",
           latestLocal: "本地已经是 GitHub 最新版本。",
           latestRemote: "GitHub 最新版本是 {hash}，可在本地没有修改时同步。",
           noLocalVersion: "当前文件夹还没有本地版本，可以获取 GitHub 最新版本 {hash}。",
@@ -1241,6 +1279,11 @@
           switchBranch: "Switch branch",
           newBranchPlaceholder: "New branch name, for example feature-home",
           createBranch: "Create and switch",
+          advancedBranchTitle: "Advanced branch actions",
+          mergeBranchLabel: "Choose side branch",
+          mergeBranch: "Merge into current branch",
+          deleteBranchLabel: "Choose local side branch",
+          deleteBranch: "Delete local side branch",
           saveSettings: "Save settings",
           pushTitle: "Push to GitHub",
           pushSubtitle: "Write a version note and save the current folder as a new version.",
@@ -1298,6 +1341,8 @@
           setupMissing: "Automatic setup is done. Please fill in the missing information.",
           switchedBranch: "Switched to branch {branch}.",
           createdBranch: "Created and switched to branch {branch}. It will be published to GitHub on first push.",
+          mergedBranch: "Merged {branch} into the current branch.",
+          deletedBranch: "Deleted local side branch {branch}.",
           latestLocal: "Local folder is already the latest GitHub version.",
           latestRemote: "Latest GitHub version is {hash}. You can sync it when there are no local changes.",
           noLocalVersion: "This folder has no local version yet. You can get GitHub version {hash}.",
@@ -1377,6 +1422,11 @@
         setText("#switchBranchButton", "switchBranch");
         setPlaceholder("#newBranchName", "newBranchPlaceholder");
         setText("#createBranchButton", "createBranch");
+        setText("#advancedBranchTitle", "advancedBranchTitle");
+        setText("label[for='mergeBranchSelect']", "mergeBranchLabel");
+        setText("#mergeBranchButton", "mergeBranch");
+        setText("label[for='deleteBranchSelect']", "deleteBranchLabel");
+        setText("#deleteBranchButton", "deleteBranch");
         setText("#setupButton", "saveSettings");
         setText(".content-grid .panel:first-child h2", "pushTitle");
         setText(".content-grid .panel:first-child .panel-subtitle", "pushSubtitle");
@@ -1438,6 +1488,13 @@
           "当前没有可读取的分支。": "There is no branch to read.",
           "没有找到这个分支。": "This branch was not found.",
           "这个分支已经存在。": "This branch already exists.",
+          "不能把当前分支合并到自己。": "The current branch cannot be merged into itself.",
+          "合并分支前请先推送、恢复或清理本地修改，避免覆盖当前文件。": "Before merging branches, push, restore, or clear local changes to avoid overwriting files.",
+          "合并失败，可能存在文件冲突。请先处理冲突，或换一个旁支再试。": "Merge failed. There may be file conflicts. Resolve conflicts first or try another side branch.",
+          "不能删除当前正在使用的分支。": "The branch currently in use cannot be deleted.",
+          "不能删除主分支。": "The main branch cannot be deleted.",
+          "这里只能删除本地旁支，GitHub 上的远程旁支不会被删除。": "Only local side branches can be deleted here. Remote branches on GitHub are not deleted.",
+          "删除失败。这个旁支可能还没有合并，Git 已阻止删除。": "Delete failed. This side branch may not be merged yet, so Git blocked deletion.",
           "请输入新文件夹名称。": "Please enter a new folder name.",
           "这个文件夹已经存在。": "This folder already exists.",
           "版本号不正确。": "The version ID is not valid.",
@@ -1702,7 +1759,11 @@
       function renderBranches(data) {
         state.branchesData = data;
         const select = $("#branchSelect");
+        const mergeSelect = $("#mergeBranchSelect");
+        const deleteSelect = $("#deleteBranchSelect");
         select.innerHTML = "";
+        mergeSelect.innerHTML = "";
+        deleteSelect.innerHTML = "";
         state.currentBranch = data.current || state.currentBranch || "";
 
         if (!data.branches?.length) {
@@ -1710,6 +1771,8 @@
           option.value = "";
           option.textContent = t("noBranches");
           select.append(option);
+          mergeSelect.append(option.cloneNode(true));
+          deleteSelect.append(option.cloneNode(true));
           return;
         }
 
@@ -1720,6 +1783,34 @@
           option.selected = branch.current;
           select.append(option);
         });
+
+        const mergeBranches = data.branches.filter((branch) => !branch.current);
+        const deleteBranches = data.branches.filter(
+          (branch) => branch.local && !branch.current && !["main", "master"].includes(branch.name),
+        );
+
+        fillBranchActionSelect(mergeSelect, mergeBranches);
+        fillBranchActionSelect(deleteSelect, deleteBranches);
+      }
+
+      function fillBranchActionSelect(select, branches) {
+        select.innerHTML = "";
+        if (!branches.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = t("noBranches");
+          select.append(option);
+          select.disabled = true;
+          return;
+        }
+
+        branches.forEach((branch) => {
+          const option = document.createElement("option");
+          option.value = branch.name;
+          option.textContent = `${branch.name}${branch.local ? "" : t("remoteSuffix")}`;
+          select.append(option);
+        });
+        select.disabled = false;
       }
 
       async function loadBranches() {
@@ -1983,6 +2074,54 @@
         if (event.key === "Enter") {
           event.preventDefault();
           $("#createBranchButton").click();
+        }
+      });
+
+      $("#mergeBranchButton").addEventListener("click", async () => {
+        const button = $("#mergeBranchButton");
+        const toast = $("#setupToast");
+        const branchName = $("#mergeBranchSelect").value;
+        if (!branchName) return;
+
+        setBusy(button, true);
+        try {
+          const data = await api("/api/merge-branch", {
+            method: "POST",
+            body: JSON.stringify({ branchName }),
+          });
+          renderStatus(data);
+          renderBranches(data.branches);
+          showToast(toast, data.mergeMessage || t("mergedBranch", { branch: branchName }));
+          await loadVersions();
+        } catch (error) {
+          showToast(toast, error.message, true);
+        } finally {
+          setBusy(button, false);
+        }
+      });
+
+      $("#deleteBranchButton").addEventListener("click", async () => {
+        const button = $("#deleteBranchButton");
+        const toast = $("#setupToast");
+        const branchName = $("#deleteBranchSelect").value;
+        if (!branchName) return;
+        const confirmed = window.confirm(`${t("deleteBranch")}: ${branchName}`);
+        if (!confirmed) return;
+
+        setBusy(button, true);
+        try {
+          const data = await api("/api/delete-branch", {
+            method: "POST",
+            body: JSON.stringify({ branchName }),
+          });
+          renderStatus(data);
+          renderBranches(data.branches);
+          showToast(toast, data.deleteMessage || t("deletedBranch", { branch: branchName }));
+          await loadVersions();
+        } catch (error) {
+          showToast(toast, error.message, true);
+        } finally {
+          setBusy(button, false);
         }
       });
 

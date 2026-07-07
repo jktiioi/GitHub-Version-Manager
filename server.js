@@ -458,6 +458,61 @@ async function createBranch(payload) {
   };
 }
 
+async function mergeBranch(payload) {
+  const config = await getActiveConfig();
+  const cwd = config.folderPath;
+  const branchName = String(payload.branchName || "").trim();
+  await assertValidBranchName(branchName);
+
+  const dirty = await runGit(["-c", "core.quotepath=false", "status", "--porcelain"], cwd);
+  if (dirty.stdout) {
+    throw new Error("合并分支前请先推送、恢复或清理本地修改，避免覆盖当前文件。");
+  }
+
+  const branches = await listBranches();
+  const target = branches.branches.find((branch) => branch.name === branchName);
+  if (!target) throw new Error("没有找到这个分支。");
+  if (target.current) throw new Error("不能把当前分支合并到自己。");
+
+  const sourceRef = target.local ? branchName : `origin/${branchName}`;
+  const result = await runGit(["merge", "--no-edit", sourceRef], cwd, 120000);
+  if (!result.ok) {
+    await runGit(["merge", "--abort"], cwd);
+    throw new Error("合并失败，可能存在文件冲突。请先处理冲突，或换一个旁支再试。");
+  }
+
+  return {
+    ...(await getStatus()),
+    branches: await listBranches(),
+    mergeMessage: `已把 ${branchName} 合并到当前分支。`,
+  };
+}
+
+async function deleteBranch(payload) {
+  const config = await getActiveConfig();
+  const cwd = config.folderPath;
+  const branchName = String(payload.branchName || "").trim();
+  await assertValidBranchName(branchName);
+
+  const branches = await listBranches();
+  const target = branches.branches.find((branch) => branch.name === branchName);
+  if (!target) throw new Error("没有找到这个分支。");
+  if (target.current) throw new Error("不能删除当前正在使用的分支。");
+  if (["main", "master"].includes(branchName)) throw new Error("不能删除主分支。");
+  if (!target.local) throw new Error("这里只能删除本地旁支，GitHub 上的远程旁支不会被删除。");
+
+  const result = await runGit(["branch", "-d", branchName], cwd);
+  if (!result.ok) {
+    throw new Error("删除失败。这个旁支可能还没有合并，Git 已阻止删除。");
+  }
+
+  return {
+    ...(await getStatus()),
+    branches: await listBranches(),
+    deleteMessage: `已删除本地旁支 ${branchName}。`,
+  };
+}
+
 function getWindowsRoots() {
   const roots = [];
   for (let code = 65; code <= 90; code += 1) {
@@ -723,6 +778,8 @@ const routes = {
   "POST /api/download-latest": downloadLatest,
   "POST /api/switch-branch": switchBranch,
   "POST /api/create-branch": createBranch,
+  "POST /api/merge-branch": mergeBranch,
+  "POST /api/delete-branch": deleteBranch,
   "POST /api/folders": listFolders,
   "POST /api/create-folder": createFolder,
   "POST /api/push": pushVersion,
